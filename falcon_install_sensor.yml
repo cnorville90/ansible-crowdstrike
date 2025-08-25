@@ -1,0 +1,14 @@
+---
+- name: A Playbook to install the Crowdstrike sensor
+  hosts: caesar.thenorvilles.com
+  gather_facts: true
+  become: true
+
+  roles:
+
+    - role: crowdstrike.falcon.falcon_install
+      vars:
+        falcon_install_method: file
+        falcon_localfile_path: /tmp/falcon-sensor-7.18.0-17106.el9.x86_64.rpm
+        falcon_localfile_cleanup: false
+        falcon_cid: 5201BB84EA4E42EFABECCF130C14CA37-6B

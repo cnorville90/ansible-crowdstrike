@@ -3,16 +3,16 @@
   hosts: localhost
   sources:
     - crowdstrike.falcon.eventstream:
-        falcon_client_id: "{{ CS_FALCON_CLIENT_ID }}"
-        falcon_client_secret: "{{ CS_FALCON_CLIENT_SECRET }}"
-        falcon_cloud: "{{ CS_FALCON_CLOUD }}"
+        falcon_client_id: "{{ client_id }}"
+        falcon_client_secret: "{{ client_secret }}"
+        falcon_cloud: "{{ cloud }}"
         stream_name: Crowdstrike
         latest: true
         include_event_types:
           - "DetectionSummaryEvent"
   
   rules:
-    - name: EDA - Crowdstrike Events from the Falcon Console
+    - name: EDA - Crowdstrike Events from the Falcon Console - Kickoff a playbook
       condition: event.falcon is defined
       action:
         run_job_template:

@@ -20,3 +20,4 @@
           - "Tactic: {{ cs_tactic }}"
           - "Technique: {{ cs_technique }}"
           - "User Name: {{ cs_username }}"
+          - "Sensor ID: {{ cs_sensor_id }}" 

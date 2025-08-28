@@ -31,3 +31,4 @@
               cs_tactic: "{{ event.falcon.event.Tactic }}"
               cs_technique: "{{ event.falcon.event.Technique }}"
               cs_username: "{{ event.falcon.event.UserName }}"
+              cs_sensor_id: "{{ event.falcon.event.SensorId }}"

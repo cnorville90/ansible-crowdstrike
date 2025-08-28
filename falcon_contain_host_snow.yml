@@ -23,12 +23,14 @@
       ansible.builtin.debug:
         var: falcon_oauth
 
-    - name: Lets open a ServiceNow Incident Ticket
+    - name: Lets open a ServiceNow Incident Ticket and populate with relevant information
       servicenow.itsm.incident:
         state: new
         description: |
-          "Test."
-        short_description: "Crowdstrike Falcon Detected an anomaly on a host"
+          "Well, Well, Well... It Looks like {{ cs_username }} ran the command <{{ cs_commandline }}> on the host
+          {{ cs_computer_name }} that falls into the category of {{ cs_classisfication }}. Not sure if our stuff is
+          on fire and burning down but we are going to contain the host until we can figure this out."
+        short_description: "Crowdstrike Falcon Detected an anomaly on host: {{ cs_computer_name }}"
         caller: "{{ sn_username }}"
         urgency: "low"
         impact: "low"
@@ -58,6 +60,6 @@
         caller: "{{ sn_username }}"
         number: "{{ incident_number_cached }}"
         other:
-          work_notes: "Host: the_host has been contained in Crowdstrike Falcon"
+          work_notes: "Host: {{ cs_computer_name }} has been contained in Crowdstrike Falcon"
       when: containment_status.changed
 

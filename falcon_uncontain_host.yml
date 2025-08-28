@@ -1,5 +1,5 @@
 ---
-- name: Playbook to display info on a host
+- name: Playbook to life containment status on a host
   hosts: localhost
   gather_facts: false
   become: true

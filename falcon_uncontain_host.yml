@@ -20,8 +20,8 @@
         hosts:
           - "c1dc9d692b6c453da281bdb4cc47859d"
         contained: no
-      register: host_info
+      register: host_contain_status
 
     - name: Display host status
       ansible.builtin.debug:
-        var: host_info
+        var: host_contain_status

@@ -29,7 +29,7 @@
         description: |
           "Test."
         short_description: "Crowdstrike Falcon Detected an anomaly on a host"
-        caller: "(( sn_username ))"
+        caller: "{{ sn_username }}"
         urgency: "low"
         impact: "low"
       register: new_incident 

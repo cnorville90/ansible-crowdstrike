@@ -52,3 +52,12 @@
       ansible.builtin.debug:
         var: containment_status
 
+    - name: Lets update the SNOW ticket when the host was successfully contained
+      servicenow.itsm.incident:
+        state: in_progress
+        caller: "{{ sn_username }}"
+        number: "{{ incident_number_cached }}"
+        other:
+          work_notes: "Host: the_host has been contained in Crowdstrike Falcon"
+      when: containment_status.changed
+

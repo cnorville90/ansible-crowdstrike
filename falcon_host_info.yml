@@ -1,0 +1,26 @@
+---
+- name: Playbook to display info on a host
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks:
+
+    - name: Lets do a one time Authentication to the Falcon server for the Play
+      crowdstrike.falcon.auth:
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+        cloud: "{{ cloud }}"
+        action: generate
+      register: falcon_oauth
+
+    - name: Lets Contain the host in Crowdstrike Falcon until we figure out what up 
+      crowdstrike.falcon.host_info:
+        auth: "{{ falcon_oauth.auth }}"
+        hosts:
+          - "c1dc9d692b6c453da281bdb4cc47859d"
+      register: host_info
+
+    - name: Display host status
+      ansible.builtin.debug:
+        var: host_info

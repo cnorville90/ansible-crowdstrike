@@ -1,5 +1,5 @@
 ---
-- name: Listen for CrowdStrike Falcon detection events
+- name: Listen for CrowdStrike Falcon detection events - Smoke Test
   hosts: localhost
   sources:
     - crowdstrike.falcon.eventstream:

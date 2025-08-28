@@ -4,6 +4,11 @@
   gather_facts: false
   become: true
 
+  vars:
+    sn_username: "{{ lookup('ansible.builtin.env', 'SN_USERNAME') }}"
+    sn_instance: "{{ lookup('ansible.builtin.env', 'SN_HOST') }}"
+
+
   tasks:
 
     - name: Lets do a one time Authentication to the Falcon server for the Play
@@ -17,3 +22,21 @@
     - name: Display the auth results
       ansible.builtin.debug:
         var: falcon_oauth
+
+    - name: Lets open a ServiceNow Incident Ticket
+      servicenow.itsm.incident:
+        state: new
+        description: |
+          "Test."
+        short_description: "Crowdstrike Falcon Detected an anomaly on a host"
+        caller: "(( sn_username ))"
+        urgency: "low"
+        impact: "low"
+      register: new_incident 
+
+    - set_fact:
+        incident_number_cached: "{{ new_incident.record.number }}"
+        cacheable: true
+
+    - ansible.builtin.debug:
+        msg: "A new incident has been created: {{ new_incident.record.number }}"

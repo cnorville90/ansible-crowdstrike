@@ -47,7 +47,7 @@
       crowdstrike.falcon.host_contain:
         auth: "{{ falcon_oauth.auth }}"
         hosts:
-          - "c1dc9d692b6c453da281bdb4cc47859d"
+          - "{{ cs_sensor_id }}"
       register: containment_status
 
     - name: Dump out the result from the containment

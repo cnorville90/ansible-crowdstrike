@@ -16,7 +16,7 @@
       condition: event.falcon is defined
       action:
         run_job_template:
-          name: 'Crowdstrike - Validate EDA Variables'
+          name: 'Crowdstrike - Contain Host & Open SNOW Incident'
           organization: 'Default'
           job_args:
             extra_vars:

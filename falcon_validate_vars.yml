@@ -1,0 +1,22 @@
+---
+- name: Playbook to Validate variables being sent in from EDA
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks: 
+
+    - name: Display Variables passed in by EDA
+      ansible.builtin.debug:
+        msg: 
+          - "Computer Name: {{ cs_computer_name }}"
+          - "Description: {{ cs_description }}"
+          - "Command Line: {{ cs_commandline }}"
+          - "Classification: {{ cs_classisfication }}"
+          - "Local IP: {{ cs_local_ip }}"
+          - "MAC Address: {{ cs_mac_addr }}"
+          - "Severity #: {{ cs_severity }}"
+          - "Severity Name: {{ cs_severity_name }}"
+          - "Tactic: {{ cs_tactic }}"
+          - "Technique: {{ cs_technique }}"
+          - "User Name: {{ cs_username }}"

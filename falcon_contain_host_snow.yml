@@ -43,6 +43,8 @@
 
     - name: Lets Contain the host in Crowdstrike Falcon until we figure out what up 
       crowdstrike.falcon.host_contain:
+        auth:
+          access_token: "{{ falcon_oauth.auth.access_token }}"
         hosts:
           - "c1dc9d692b6c453da281bdb4cc47859d"
       register: containment_status

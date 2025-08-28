@@ -22,8 +22,11 @@
           msg: 
             - "Found detection on: {{ event.falcon.event.ComputerName }}"
             - "Detection Severity: {{ event.falcon.event.Severity }}"
+            - "Detection Type: {{ event.falcon.event.DetectName }}"
+            - "Detection Description: {{ event.falcon.event.DetectDescription }}"
+            - "Relevant Command: {{ event.falcon.event.CommandLine }}"
             - "Offset: {{ event.falcon.metadata.offset }}"
-            - "Payload: {{ event.falcon.event }}"
+            # - "Payload: {{ event.falcon.event }}"
             - "---------------------------------------------------------"
 
         # run_job_template:

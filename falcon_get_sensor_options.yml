@@ -1,7 +1,7 @@
 ---
 - name: Get Falcon Sensor options
-  hosts: test
-  gather_facts: true
+  hosts: eda
+  gather_facts: false
   become: true
 
   tasks:
@@ -14,8 +14,3 @@
       ansible.builtin.debug:
         var: cs_falcon_info
 
-    # - name: Use the role to set the CID
-    #   vars:
-    #     falcon_cid: 5201BB84EA4E42EFABECCF130C14CA37-6B
-    #   ansible.builtin.import_role:
-    #     name: crowdstrike.falcon.falcon_configure

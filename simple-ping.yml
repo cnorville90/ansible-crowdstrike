@@ -1,0 +1,9 @@
+---
+- name: Just a simple Ping test for Ansible connectivity
+  hosts: eda
+  gather_facts: false
+
+  tasks:
+
+    - name: Ping a host
+      ansible.builtin.ping:

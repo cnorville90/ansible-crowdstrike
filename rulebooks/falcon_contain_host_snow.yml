@@ -1,0 +1,19 @@
+---
+- name: Playbook to Contain a host and open a SNOW ticket after a detection event
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks:
+
+    - name: Lets do a one time Authentication to the Falcon server for the Play
+      crowdstrike.falcon.auth:
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+        cloud: "{{ cloud }}"
+        action: generate
+      register: falcon_oauth
+
+    - name: Display the auth results
+      ansible.builtin.debug:
+        var: falcon_oauth

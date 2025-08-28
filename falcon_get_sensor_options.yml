@@ -1,6 +1,6 @@
 ---
 - name: Get Falcon Sensor options
-  hosts: eda
+  hosts: all
   gather_facts: false
   become: true
 

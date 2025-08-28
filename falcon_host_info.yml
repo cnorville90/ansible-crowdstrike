@@ -14,7 +14,7 @@
         action: generate
       register: falcon_oauth
 
-    - name: Lets Contain the host in Crowdstrike Falcon until we figure out what up 
+    - name: Look at a host status in Crowdstrike Falcon
       crowdstrike.falcon.host_info:
         auth: "{{ falcon_oauth.auth }}"
         hosts:

@@ -1,6 +1,6 @@
 ---
 - name: A Playbook to install the Crowdstrike sensor
-  hosts: caesar.thenorvilles.com
+  hosts: all
   gather_facts: true
   become: true
 

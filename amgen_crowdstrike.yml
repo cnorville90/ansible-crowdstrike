@@ -1,0 +1,232 @@
+---
+- name: CrowdStrike offline Windows & Linux servers (>24h) report
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - csvault.yml    # should define: csclientid, csclientsecret
+
+  # If you store secrets in a vault file, uncomment
+  # vars_files:
+  #   - csvault.yml    # should define: csclientid, csclientsecret
+
+  collections:
+    - crowdstrike.falcon
+    - community.general
+
+  vars:
+    # === Report parameters ===
+    hours_threshold: 24
+    report_dir: "/var/tmp/crowdstrike_reports"
+    report_path: "{{ report_dir }}/offline_servers_over_{{ hours_threshold }}h_{{ lookup('pipe','date -u +%Y%m%dT%H%M%SZ') }}.csv"
+    
+    # === Email settings (adjust to your environment) ===
+    smtp_host: "mailhost-i.amgen.com"
+    smtp_port: 25
+    smtp_sender: cs-heartbeats@amgen.com
+    recipient_email: jparis01@amgen.com
+
+    # === CrowdStrike creds & cloud ===
+    # Prefer vault vars; fall back to env if present.
+    crowdstrike_cloud: "us-1"   # e.g., us-1, us-2, eu-1, us-gov-1
+
+
+  pre_tasks:
+ 
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ report_dir }}"
+        state: directory
+        mode: "0750"
+ 
+    - name: Compute cutoff epoch (UTC) for offline threshold
+      ansible.builtin.set_fact:
+        cutoff_epoch: "{{ (lookup('pipe','date -u +%s') | int) - (hours_threshold | int) * 3600 }}"
+
+    - name: Compute cutoff ISO8601 (UTC)
+      ansible.builtin.set_fact:
+        cutoff_iso: "{{ lookup('pipe', 'date -u -d @' ~ cutoff_epoch ~ ' +%Y-%m-%dT%H:%M:%SZ') }}"
+
+    - name: Build FQL to find Windows/Linux servers last seen before cutoff
+      ansible.builtin.set_fact:
+        # Hosts FQL: use list ORs and '+' as AND; quote values.
+        fql_filter: "platform_name:['Windows','Linux']+product_type_desc:'Server'+last_seen:<'{{ cutoff_iso }}'"
+
+ 
+  tasks:
+
+    - name: Authenticate to CrowdStrike (token + discovered cloud)
+      crowdstrike.falcon.auth:
+        client_id: "{{ csclientid }}"
+        client_secret: "{{ csclientsecret }}"
+        cloud: "{{ crowdstrike_cloud }}"
+      register: falcon_auth
+
+ 
+
+    - name: Lookup host IDs (AIDs) that match filter (lookup handles its own auth)
+
+      ansible.builtin.set_fact:
+
+        host_ids: "{{ lookup('crowdstrike.falcon.host_ids', fql_filter, client_id=csclientid, client_secret=csclientsecret, cloud=crowdstrike_cloud) }}"
+
+ 
+
+    - name: Short-circuit if none found
+
+      ansible.builtin.debug:
+
+        msg: "No offline servers (> {{ hours_threshold }}h) found (cutoff {{ cutoff_iso }})."
+
+      when: host_ids | length == 0
+
+ 
+
+    - name: Fetch host details (Hosts READ API)
+
+      crowdstrike.falcon.host_info:
+
+        auth: "{{ falcon_auth.auth }}"
+
+        hosts: "{{ host_ids }}"
+
+      register: host_details
+
+      when: host_ids | length > 0
+
+ 
+
+    - name: Normalize hosts list (avoid undefined errors when no results)
+
+      ansible.builtin.set_fact:
+
+        hosts_list: "{{ (host_details | default({'hosts': []}))['hosts'] }}"
+
+ 
+
+    - name: Init CSV lines with header
+
+      ansible.builtin.set_fact:
+
+        csv_lines: ["hostname,last_seen,platform,site_name,product_type"]
+
+ 
+
+    - name: Append each host as a CSV row
+
+      ansible.builtin.set_fact:
+
+        csv_lines: >-
+
+          {{
+
+            csv_lines
+
+            + [
+
+                (
+
+                  (item.hostname | default('')) ~ ',' ~
+
+                  (item.last_seen | default('')) ~ ',' ~
+
+                  (item.platform_name | default('')) ~ ',' ~
+
+                  (item.site_name | default('')) ~ ',' ~
+
+                  (item.product_type_desc | default(''))
+
+                )
+
+              ]
+
+          }}
+
+      loop: "{{ hosts_list }}"
+
+      when: hosts_list | length > 0
+
+ 
+
+    - name: Write CSV file
+
+      ansible.builtin.copy:
+
+        dest: "{{ report_path }}"
+
+        content: "{{ (csv_lines | default([])) | join('\n') ~ '\n' }}"
+
+        mode: "0640"
+
+      register: write_csv
+
+ 
+
+    - name: Capture actual report path
+
+      ansible.builtin.set_fact:
+
+        report_actual_path: "{{ write_csv.dest | default(report_path) }}"
+
+ 
+
+    - name: Check CSV exists
+
+      ansible.builtin.stat:
+
+        path: "{{ report_actual_path }}"
+
+      register: csv_stat
+
+ 
+
+    - name: Debug CSV stat
+
+      ansible.builtin.debug:
+
+        var: csv_stat.stat
+
+ 
+
+    - name: Email the CSV
+
+      when: (csv_stat.stat.exists | default(false)) and (csv_stat.stat.isreg | default(false))
+
+      ansible.builtin.mail:
+
+        host: "{{ smtp_host }}"
+
+        port: "{{ smtp_port }}"
+
+        from: "{{ smtp_sender }}"
+
+        to: "{{ recipient_email }}"
+
+        cc: rzayas01@amgen.com
+
+        subject: "CrowdStrike offline Windows & Linux servers (> {{ hours_threshold }}h)"
+
+        body: |
+
+          Hi,
+
+ 
+
+          Attached is today's CrowdStrike offline Windows & Linux **server** report.
+
+          Criteria:
+
+            • Platform: Windows or Linux
+
+            • Product type: Server
+
+            • Last seen earlier than: {{ cutoff_iso }} (UTC)
+
+            • Threshold: >{{ hours_threshold }} hours since last heartbeat
+
+ 
+
+          – Ansible
+
+        attach:
+
+          - "{{ report_actual_path }}"

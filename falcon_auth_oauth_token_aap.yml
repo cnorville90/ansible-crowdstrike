@@ -1,0 +1,33 @@
+---
+- name: Authenticate to the Falcon Server and get a token
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: Lets do a one time Authentication to the Falcon server for the Play - Info comes from the Crowdstrike Credential
+      crowdstrike.falcon.auth:
+        client_id: "{{ falcon_client_id }}"
+        client_secret: "{{ falcon_client_secret }}"
+        cloud: "{{ falcon_cloud }}"
+        action: generate
+      register: falcon_oauth
+
+    - name: Display the auth results
+      ansible.builtin.debug:
+        var: falcon_oauth
+
+    - name: Get the CID with Checksum
+      crowdstrike.falcon.cid_info:
+        auth:
+          access_token: "{{ falcon_oauth.auth.access_token }}"
+          cloud: "{{ falcon_cloud }}"
+      register: cid_info
+
+    - name: Display CID Info
+      ansible.builtin.debug:
+        var: cid_info
+  
+    - name: Using the falcon.host_ids plugin to Print all hosts IDs
+      ansible.builtin.debug:
+        msg: "{{ lookup('crowdstrike.falcon.host_ids', '', client_id=falcon_client_id, client_secret=falcon_client_secret, cloud=falcon_cloud ) }}"

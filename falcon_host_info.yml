@@ -3,14 +3,16 @@
   hosts: localhost
   gather_facts: false
   become: true
+  vars_files:
+    - falcon_vars.yml
 
   tasks:
 
     - name: Lets do a one time Authentication to the Falcon server for the Play
       crowdstrike.falcon.auth:
-        client_id: "{{ client_id }}"
-        client_secret: "{{ client_secret }}"
-        cloud: "{{ cloud }}"
+        client_id: "{{ falcon_client_id }}"
+        client_secret: "{{ falcon_client_secret }}"
+        cloud: "{{ falcon_cloud }}"
         action: generate
       register: falcon_oauth
 
@@ -18,7 +20,7 @@
       crowdstrike.falcon.host_info:
         auth: "{{ falcon_oauth.auth }}"
         hosts:
-          - "c1dc9d692b6c453da281bdb4cc47859d"
+          - "91b3f1b26317403fa1f0ad37fd989bdf"
       register: host_info
 
     - name: Display host status

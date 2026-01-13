@@ -6,4 +6,9 @@
 
   roles:
 
+      # Role to install the falcon sensor
     - role: crowdstrike.falcon.falcon_install
+      # Role to configure the Falcon Sensor / Set the CID
+    - role: crowdstrike.falcon.falcon_configure
+      vars:
+        falcon_cid: 5201BB84EA4E42EFABECCF130C14CA37-6B
